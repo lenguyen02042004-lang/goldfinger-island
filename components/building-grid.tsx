@@ -6,7 +6,7 @@ import { Coins, Hammer, LockKeyhole, Shield, Timer } from "lucide-react";
 import { GameButton } from "./game-button";
 
 export function BuildingGrid() {
-  const { state, build, shield } = useGame();
+  const { state, build, shield, isBusy } = useGame();
   const active = state.buildings.filter((building) => building.status === "building").length;
 
   return (
@@ -33,7 +33,7 @@ export function BuildingGrid() {
                 tone="blue"
                 icon={<Shield size={16} />}
                 onClick={() => shield(building.id)}
-                disabled={shielded || state.coin < BUILDING_SHIELD_COST}
+                disabled={isBusy || shielded || state.coin < BUILDING_SHIELD_COST}
                 aria-label={`Bảo vệ ${building.name}`}
               >
                 {shielded ? "Đã bảo vệ" : `${BUILDING_SHIELD_COST} coin`}
@@ -45,7 +45,7 @@ export function BuildingGrid() {
                 tone={building.status === "destroyed" ? "red" : "green"}
                 icon={<Hammer size={16} />}
                 onClick={() => build(building.id)}
-                disabled={!canBuild}
+                disabled={isBusy || !canBuild}
                 data-testid={`build-${building.id}`}
               >
                 <Coins size={15} /> {building.cost} · {formatTime(building.duration)}

@@ -53,6 +53,7 @@ export type GameState = {
   events: GameEvent[];
   round: number;
   winner: string | null;
+  winnerRound: number | null;
   lastSavedAt: number;
 };
 

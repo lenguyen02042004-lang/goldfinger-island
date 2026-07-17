@@ -159,13 +159,41 @@ main {
 .shield-state,
 .rocket-capacity,
 .auth-button,
-.demo-pill {
+.demo-pill,
+.connection-pill {
   align-items: center;
   border-radius: 6px;
   display: inline-flex;
   font-weight: 900;
   gap: 6px;
   white-space: nowrap;
+}
+
+.connection-pill {
+  background: #eef3f5;
+  color: #607587;
+  font-size: .58rem;
+  padding: 7px 8px;
+}
+
+.connection-pill i {
+  background: currentColor;
+  border-radius: 50%;
+  height: 7px;
+  width: 7px;
+}
+
+.connection-pill.online {
+  background: #e4f7ea;
+  color: #23864c;
+}
+
+.connection-pill.online i {
+  box-shadow: 0 0 0 3px rgba(35, 134, 76, .14);
+}
+
+.connection-pill.loading i {
+  animation: pulse 1s infinite;
 }
 
 .auth-button {
@@ -1141,6 +1169,25 @@ main {
 .target-card span small { color: var(--muted); font-size: .68rem; }
 .target-card i { color: #168cc6; font-size: .7rem; font-style: normal; }
 
+.target-empty {
+  align-items: center;
+  background: #f4f9fb;
+  border: 2px dashed #c9dfe9;
+  border-radius: 6px;
+  color: #668098;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+  min-height: 118px;
+  padding: 18px;
+  text-align: center;
+}
+
+.target-empty b {
+  font-size: .78rem;
+}
+
 .launch-summary {
   background: #f7fbfd;
   border: 1px solid var(--line);
@@ -1208,6 +1255,24 @@ main {
 .winner-modal > span { color: var(--muted); font-size: .83rem; margin: 10px 0 23px; }
 .winner-burst { color: #ffdd43; font-size: 12rem; left: 50%; opacity: .14; position: absolute; top: -80px; transform: translateX(-50%); }
 
+.game-notice {
+  background: #fff;
+  border: 2px solid #ef6b58;
+  border-radius: 6px;
+  bottom: 82px;
+  box-shadow: 0 8px 24px rgba(12, 49, 70, .2);
+  color: #9e2f24;
+  font-size: .78rem;
+  font-weight: 800;
+  left: 50%;
+  max-width: min(460px, calc(100vw - 28px));
+  padding: 11px 15px;
+  position: fixed;
+  text-align: center;
+  transform: translateX(-50%);
+  z-index: 140;
+}
+
 @media (max-width: 1000px) {
   .desktop-nav { display: none; }
   .hero-game { grid-template-columns: 1fr; padding: 38px; }
@@ -1226,6 +1291,7 @@ main {
   .brand small { display: none; }
   .shield-state { display: none; }
   .auth-button span { display: none; }
+  .connection-pill { padding: 7px; }
   .mobile-nav {
     align-items: center;
     background: #fff;

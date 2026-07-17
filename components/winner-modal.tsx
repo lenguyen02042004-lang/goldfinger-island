@@ -12,7 +12,7 @@ export function WinnerModal() {
       <div className="winner-modal">
         <div className="winner-burst">★</div>
         <Trophy size={58} />
-        <p>Vòng {state.round} hoàn tất</p>
+        <p>Vòng {state.winnerRound ?? state.round} hoàn tất</p>
         <h2>{state.winner} chiến thắng!</h2>
         <span>Thành tích đã được lưu. Bắt đầu cuộc đua mới thôi.</span>
         <GameButton tone="green" icon={<RotateCcw size={18} />} onClick={newRound}>Chơi vòng mới</GameButton>

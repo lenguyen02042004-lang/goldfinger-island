@@ -15,7 +15,7 @@ const links = [
 
 export function Navbar() {
   const pathname = usePathname();
-  const { state } = useGame();
+  const { state, mode } = useGame();
   const shielded = Boolean(state.islandShieldUntil && state.islandShieldUntil > state.now);
 
   return (
@@ -34,6 +34,9 @@ export function Navbar() {
           ))}
         </nav>
         <div className="top-stats">
+          <span className={`connection-pill ${mode}`} title={mode === "online" ? "Đã kết nối Supabase Realtime" : "Chế độ chơi cục bộ"}>
+            <i /> {mode === "online" ? "ONLINE" : mode === "loading" ? "..." : "DEMO"}
+          </span>
           {shielded && <span className="shield-state" title="Đảo đang được bảo vệ"><Shield size={16} /> Đang thủ</span>}
           <span className="coin-badge" data-testid="coin-badge"><Coins size={19} /> {state.coin}</span>
           <AuthButton />

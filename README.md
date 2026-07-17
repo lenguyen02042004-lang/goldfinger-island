@@ -34,7 +34,7 @@ Mở `http://localhost:3000`. Nếu chưa có biến môi trường, game tự c
 ## Kết nối Supabase
 
 1. Tạo project tại Supabase.
-2. Mở SQL Editor và chạy toàn bộ [supabase/schema.sql](./supabase/schema.sql).
+2. Mở SQL Editor và chạy lần lượt [migration nền tảng](./supabase/migrations/20260717000000_schema.sql) và [migration multiplayer](./supabase/migrations/20260717000100_multiplayer.sql). Project hiện tại đã có migration nền tảng nên chỉ cần chạy file multiplayer.
 3. Trong Authentication > Providers > Email, bật Email và tắt `Confirm email` để người chơi dùng tài khoản ngay sau khi đăng ký.
 4. Thêm URL của local và Vercel vào Authentication > URL Configuration.
 5. Tạo `.env.local` từ `.env.example`:
@@ -44,7 +44,9 @@ NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_YOUR_KEY
 ```
 
-Ứng dụng ưu tiên Publishable key mới và vẫn hỗ trợ `NEXT_PUBLIC_SUPABASE_ANON_KEY` cũ. Nút `Đăng nhập` có hai chế độ đăng nhập/đăng ký bằng email và mật khẩu; Google OAuth được để dành cho giai đoạn sau. Schema đã bật RLS; radar dùng view không chứa `target_slot`.
+Ứng dụng ưu tiên Publishable key mới và vẫn hỗ trợ `NEXT_PUBLIC_SUPABASE_ANON_KEY` cũ. Nút `Đăng nhập` có hai chế độ đăng nhập/đăng ký bằng email và mật khẩu; Google OAuth được để dành cho giai đoạn sau.
+
+`multiplayer.sql` chuyển gameplay sang các RPC chạy phía server: trình duyệt không được tự sửa coin, thời gian xây, mục tiêu tên lửa hoặc kết quả vòng. Supabase Realtime phát thay đổi công trình, radar, sự kiện và bảng xếp hạng đến các người chơi đang online. Radar không trả về `target_slot`.
 
 ## GitHub và Vercel
 

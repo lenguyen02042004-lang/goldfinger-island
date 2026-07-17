@@ -49,6 +49,7 @@ export function createInitialState(now = Date.now()): GameState {
     events: [event("launch", "Cảnh báo: Minh vừa phóng tên lửa đến đảo của bạn!", now - 30_000)],
     round: 1,
     winner: null,
+    winnerRound: null,
     lastSavedAt: now,
   };
 }
@@ -127,6 +128,7 @@ export function tickGame(input: GameState, now: number): GameState {
     if (completed === 10 && !state.winner) {
       const elapsed = Math.floor((now - state.roundStartedAt) / 1000);
       state.winner = "Bạn";
+      state.winnerRound = state.round;
       if (you) {
         you.wins += 1;
         you.bestTime = you.bestTime === null ? elapsed : Math.min(you.bestTime, elapsed);
@@ -171,10 +173,10 @@ export function shieldIsland(state: GameState): GameState {
   return next;
 }
 
-export function launchMissile(state: GameState, targetName: string): GameState {
+export function launchMissile(state: GameState, targetPlayerId: string): GameState {
   const next = tickGame(state, state.now);
   const active = next.missiles.filter((missile) => missile.from === "Bạn" && missile.status === "flying").length;
-  const target = next.players.find((player) => player.name === targetName && player.id !== "you");
+  const target = next.players.find((player) => player.id === targetPlayerId && player.id !== "you");
   if (!target || active >= MISSILE_LIMIT || next.coin < MISSILE_COST) return next;
 
   next.coin -= MISSILE_COST;

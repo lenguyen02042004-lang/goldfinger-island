@@ -10,7 +10,7 @@ import Link from "next/link";
 import { MissileAlert } from "./missile-alert";
 
 export function IslandDashboard() {
-  const { state, shieldAll } = useGame();
+  const { state, shieldAll, isBusy } = useGame();
   const active = state.buildings.filter((building) => building.status === "building").length;
   const complete = state.buildings.filter((building) => building.status === "completed").length;
   const shielded = Boolean(state.islandShieldUntil && state.islandShieldUntil > state.now);
@@ -24,7 +24,13 @@ export function IslandDashboard() {
           <p>Hoàn thành từng cặp công trình để mở cấp tiếp theo.</p>
         </div>
         <div className="page-actions">
-          <GameButton tone="blue" icon={<Shield size={18} />} onClick={shieldAll} disabled={shielded || state.coin < ISLAND_SHIELD_COST}>
+          <GameButton
+            tone="blue"
+            icon={<Shield size={18} />}
+            onClick={shieldAll}
+            disabled={isBusy || shielded || state.coin < ISLAND_SHIELD_COST}
+            data-testid="shield-island"
+          >
             {shielded ? `Còn ${formatTime((state.islandShieldUntil! - state.now) / 1000)}` : `Thủ toàn đảo · ${ISLAND_SHIELD_COST}`}
           </GameButton>
           <Link href="/attack"><GameButton tone="red" icon={<Target size={18} />}>Tấn công</GameButton></Link>

@@ -28,6 +28,7 @@ Original prompt: Build the complete GoldFinger Island team-building web game: 10
 - [x] Scaffold Next.js 15 project.
 - [x] Implement complete local demo gameplay.
 - [x] Add Supabase integration, email/password auth, cloud snapshots, and SQL schema.
+- [x] Add authoritative multiplayer RPC migration, Realtime subscriptions, and online client adapter.
 - [x] Verify production build.
 - [x] Verify build, shield, missile, win, reset, and leaderboard flows in Chrome.
 - [x] Add responsive cartoon UI and deployment documentation.
@@ -35,7 +36,9 @@ Original prompt: Build the complete GoldFinger Island team-building web game: 10
 - [x] Add real Supabase Project URL and Publishable key locally and to Vercel.
 - [x] Run schema in the user's Supabase project (verified through Data API).
 - [ ] Enable Google provider later (deferred by user).
-- [ ] Disable Confirm email in Supabase Auth so new email/password accounts receive a session immediately.
+- [x] Disable Confirm email in Supabase Auth so new email/password accounts receive a session immediately.
+- [ ] Run `supabase/migrations/20260717000100_multiplayer.sql` in the live Supabase project.
+- [ ] Verify the live online flow with two authenticated accounts after the migration is installed.
 - [x] Connect and deploy Vercel project under team `le-nguyen2004`.
 - [x] Add Supabase environment values to Vercel.
 
@@ -48,3 +51,9 @@ Original prompt: Build the complete GoldFinger Island team-building web game: 10
 - Full browser flow: two concurrent builds, shielded incoming missile, outgoing missile reward, all 10 buildings, winner modal, round reset, and persistent win count passed.
 - Desktop screenshots inspected; radar label overlap was fixed and rechecked.
 - Email/password login and registration modal verified on desktop and a 390px mobile viewport; no browser console errors.
+- Multiplayer provider demo fallback verified: island shield reduced coin from 1000 to 985 and activated the five-minute timer with no console errors.
+- Target selection now uses player IDs; demo launch reduced coin from 1000 to 995 and added the outgoing missile to radar with no console errors.
+- Production build passed after the multiplayer provider, RPC client, Realtime listeners, and responsive status UI were added.
+- Both migrations and the authoritative two-player RPC flow passed in an isolated PGlite PostgreSQL database; authenticated direct coin writes were denied.
+- Supabase CLI is installed, but the machine has no `SUPABASE_ACCESS_TOKEN`; the live multiplayer migration cannot be applied from CLI until Supabase is authenticated.
+- Live Auth settings verified through `/auth/v1/settings`: Email enabled, signup enabled, mailer autoconfirm enabled, Google disabled.

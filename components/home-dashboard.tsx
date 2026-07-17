@@ -10,7 +10,7 @@ import { ArrowRight, CalendarCheck, Castle, ShieldCheck, Sparkles } from "lucide
 import Link from "next/link";
 
 export function HomeDashboard() {
-  const { state, claimReward } = useGame();
+  const { state, claimReward, isBusy } = useGame();
   const complete = state.buildings.filter((building) => building.status === "completed").length;
   const today = new Date(state.now).toISOString().slice(0, 10);
   const claimed = state.dailyRewardDate === today;
@@ -27,7 +27,7 @@ export function HomeDashboard() {
           <p>Xây căn cứ, bật lá chắn và tạo những màn đấu trí vui hết cỡ cùng đồng đội.</p>
           <div className="hero-actions">
             <Link href="/island"><GameButton tone="orange" icon={<Castle size={20} />}>Vào đảo của tôi</GameButton></Link>
-            <GameButton tone="white" icon={<CalendarCheck size={19} />} onClick={claimReward} disabled={claimed}>
+            <GameButton tone="white" icon={<CalendarCheck size={19} />} onClick={claimReward} disabled={isBusy || claimed}>
               {claimed ? "Đã điểm danh" : `Nhận ${DAILY_REWARD} coin`}
             </GameButton>
           </div>

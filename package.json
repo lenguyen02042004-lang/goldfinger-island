@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test:migrations": "node tests/validate-migrations.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.6.1",
@@ -16,6 +17,7 @@
     "react-dom": "19.1.0"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.4",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.3",
     "@types/react-dom": "^19.0.2",

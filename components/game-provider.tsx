@@ -10,69 +10,173 @@ import {
   shieldIsland,
   tickGame,
 } from "@/lib/game-engine";
+import {
+  claimCloudDailyReward,
+  fetchMultiplayerState,
+  hasAuthenticatedPlayer,
+  launchCloudMissile,
+  shieldCloudBuilding,
+  shieldCloudIsland,
+  startCloudBuild,
+  subscribeToMultiplayer,
+  unsubscribeFromMultiplayer,
+} from "@/services/multiplayer";
 import type { GameState, PersistedGame } from "@/types/game";
-import { loadCloudGame, saveCloudGame } from "@/services/game-sync";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+
+type GameMode = "loading" | "demo" | "online";
 
 type GameContextValue = {
   state: GameState;
+  mode: GameMode;
+  isBusy: boolean;
   build: (id: number) => void;
   shield: (id: number) => void;
   shieldAll: () => void;
-  launch: (name: string) => void;
+  launch: (playerId: string) => void;
   claimReward: () => void;
   newRound: () => void;
 };
 
 const GameContext = createContext<GameContextValue | null>(null);
 const STORAGE_KEY = "goldfinger-island-v1";
+const DISMISSED_WINNER_KEY = "goldfinger-dismissed-winner";
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<GameState>(() => createInitialState());
-  const hydrated = useRef(false);
+  const [mode, setMode] = useState<GameMode>("loading");
+  const [isBusy, setIsBusy] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const stateRef = useRef(state);
+  const modeRef = useRef<GameMode>("loading");
+  const refreshInFlight = useRef(false);
+  const refreshQueued = useRef<number | null>(null);
+  const dismissedWinner = useRef(0);
 
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
 
   useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
+
+  const applyCloudState = useCallback((next: GameState) => {
+    if (next.winnerRound && next.winnerRound <= dismissedWinner.current) {
+      next = { ...next, winner: null, winnerRound: null };
+    }
+    stateRef.current = next;
+    setState((current) => (
+      modeRef.current !== "online" || next.lastSavedAt >= current.lastSavedAt ? next : current
+    ));
+  }, []);
+
+  const refreshCloud = useCallback(async () => {
+    if (refreshInFlight.current || modeRef.current !== "online") return;
+    refreshInFlight.current = true;
+    try {
+      applyCloudState(await fetchMultiplayerState());
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Không thể đồng bộ trò chơi.");
+    } finally {
+      refreshInFlight.current = false;
+    }
+  }, [applyCloudState]);
+
+  useEffect(() => {
+    let cancelled = false;
+
     async function hydrate() {
+      dismissedWinner.current = Number(localStorage.getItem(DISMISSED_WINNER_KEY) ?? 0);
+
+      if (await hasAuthenticatedPlayer()) {
+        try {
+          const cloudState = await fetchMultiplayerState();
+          if (cancelled) return;
+          applyCloudState(cloudState);
+          setMode("online");
+          return;
+        } catch (error) {
+          if (!cancelled) {
+            setNotice(error instanceof Error ? error.message : "Không thể mở chế độ online.");
+          }
+        }
+      }
+
       let localState: GameState | null = null;
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
           const parsed = JSON.parse(saved) as PersistedGame;
-          localState = { ...parsed, now: Date.now() };
+          localState = {
+            ...parsed,
+            now: Date.now(),
+            winnerRound: parsed.winnerRound ?? null,
+          };
         } catch {
           localStorage.removeItem(STORAGE_KEY);
         }
       }
-      const cloudState = await loadCloudGame();
-      const newest = cloudState && (!localState || cloudState.lastSavedAt > localState.lastSavedAt) ? cloudState : localState;
-      if (newest) setState(tickGame(newest, Date.now()));
-      hydrated.current = true;
+
+      if (cancelled) return;
+      if (localState) setState(tickGame(localState, Date.now()));
+      setMode("demo");
     }
+
     void hydrate();
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [applyCloudState]);
 
   useEffect(() => {
-    const interval = window.setInterval(
-      () => setState((current) => tickGame(current, Math.max(Date.now(), current.now + 1000))),
-      1000,
-    );
+    const interval = window.setInterval(() => {
+      setState((current) => {
+        if (modeRef.current === "online") {
+          const next = { ...current, now: Math.max(Date.now(), current.now + 1000) };
+          stateRef.current = next;
+          return next;
+        }
+        if (modeRef.current === "loading") return current;
+        const next = tickGame(current, Math.max(Date.now(), current.now + 1000));
+        stateRef.current = next;
+        return next;
+      });
+    }, 1000);
     return () => window.clearInterval(interval);
   }, []);
 
   useEffect(() => {
-    if (!hydrated.current) return;
+    if (mode !== "demo") return;
     const { now: _now, ...persisted } = state;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(persisted));
-    const timeout = window.setTimeout(() => void saveCloudGame(state), 1000);
-    return () => window.clearTimeout(timeout);
-  }, [state]);
+  }, [mode, state]);
 
-  const update = useCallback((fn: (current: GameState) => GameState) => {
+  useEffect(() => {
+    if (mode !== "online") return;
+
+    const scheduleRefresh = () => {
+      if (refreshQueued.current !== null) window.clearTimeout(refreshQueued.current);
+      refreshQueued.current = window.setTimeout(() => void refreshCloud(), 250);
+    };
+    const channel = subscribeToMultiplayer(scheduleRefresh);
+    const poll = window.setInterval(() => void refreshCloud(), 4000);
+
+    return () => {
+      window.clearInterval(poll);
+      if (refreshQueued.current !== null) window.clearTimeout(refreshQueued.current);
+      refreshQueued.current = null;
+      void unsubscribeFromMultiplayer(channel);
+    };
+  }, [mode, refreshCloud]);
+
+  useEffect(() => {
+    if (!notice) return;
+    const timeout = window.setTimeout(() => setNotice(null), 7000);
+    return () => window.clearTimeout(timeout);
+  }, [notice]);
+
+  const updateDemo = useCallback((fn: (current: GameState) => GameState) => {
     setState((current) => {
       const next = fn(current);
       stateRef.current = next;
@@ -80,11 +184,26 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const runCloudAction = useCallback(async (action: () => Promise<GameState>) => {
+    if (isBusy) return;
+    setIsBusy(true);
+    setNotice(null);
+    try {
+      applyCloudState(await action());
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Thao tác chưa thực hiện được.");
+      await refreshCloud();
+    } finally {
+      setIsBusy(false);
+    }
+  }, [applyCloudState, isBusy, refreshCloud]);
+
   useEffect(() => {
     window.render_game_to_text = () => {
       const current = stateRef.current;
       return JSON.stringify({
         coordinateSystem: "UI game; no world coordinates. Timers are seconds remaining.",
+        mode: modeRef.current,
         round: current.round,
         coin: current.coin,
         winner: current.winner,
@@ -108,9 +227,13 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       });
     };
     window.advanceTime = (ms: number) => {
-      update((current) => tickGame(current, current.now + ms));
+      if (modeRef.current === "online") {
+        setState((current) => ({ ...current, now: current.now + ms }));
+      } else {
+        updateDemo((current) => tickGame(current, current.now + ms));
+      }
     };
-  }, [update]);
+  }, [updateDemo]);
 
   useEffect(() => {
     function handleFullscreen(event: KeyboardEvent) {
@@ -127,15 +250,62 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo<GameContextValue>(() => ({
     state,
-    build: (id) => update((current) => buildBuilding(current, id)),
-    shield: (id) => update((current) => shieldBuilding(current, id)),
-    shieldAll: () => update(shieldIsland),
-    launch: (name) => update((current) => launchMissile(current, name)),
-    claimReward: () => update(claimDailyReward),
-    newRound: () => update(resetRound),
-  }), [state, update]);
+    mode,
+    isBusy,
+    build: (id) => {
+      if (mode === "online") {
+        void runCloudAction(() => startCloudBuild(id));
+      } else if (mode === "demo") {
+        updateDemo((current) => buildBuilding(current, id));
+      }
+    },
+    shield: (id) => {
+      if (mode === "online") {
+        void runCloudAction(() => shieldCloudBuilding(id));
+      } else if (mode === "demo") {
+        updateDemo((current) => shieldBuilding(current, id));
+      }
+    },
+    shieldAll: () => {
+      if (mode === "online") {
+        void runCloudAction(shieldCloudIsland);
+      } else if (mode === "demo") {
+        updateDemo(shieldIsland);
+      }
+    },
+    launch: (playerId) => {
+      if (mode === "online") {
+        void runCloudAction(() => launchCloudMissile(playerId));
+      } else if (mode === "demo") {
+        void updateDemo((current) => launchMissile(current, playerId));
+      }
+    },
+    claimReward: () => {
+      if (mode === "online") {
+        void runCloudAction(claimCloudDailyReward);
+      } else if (mode === "demo") {
+        updateDemo(claimDailyReward);
+      }
+    },
+    newRound: () => {
+      if (mode === "online") {
+        const winnerRound = stateRef.current.winnerRound ?? 0;
+        dismissedWinner.current = winnerRound;
+        localStorage.setItem(DISMISSED_WINNER_KEY, String(winnerRound));
+        setState((current) => ({ ...current, winner: null, winnerRound: null }));
+        void refreshCloud();
+      } else if (mode === "demo") {
+        updateDemo(resetRound);
+      }
+    },
+  }), [isBusy, mode, refreshCloud, runCloudAction, state, updateDemo]);
 
-  return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
+  return (
+    <GameContext.Provider value={value}>
+      {children}
+      {notice && <div className="game-notice" role="status">{notice}</div>}
+    </GameContext.Provider>
+  );
 }
 
 export function useGame() {
