@@ -41,10 +41,10 @@ Mở `http://localhost:3000`. Nếu chưa có biến môi trường, game tự c
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_ANON_KEY
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_YOUR_KEY
 ```
 
-Khi có khóa Supabase, nút `Đăng nhập` xuất hiện và snapshot game được đồng bộ theo tài khoản. Schema đã bật RLS; radar dùng view không chứa `target_slot`.
+Ứng dụng ưu tiên Publishable key mới và vẫn hỗ trợ `NEXT_PUBLIC_SUPABASE_ANON_KEY` cũ. Khi có khóa Supabase, nút `Đăng nhập` xuất hiện và snapshot game được đồng bộ theo tài khoản. Schema đã bật RLS; radar dùng view không chứa `target_slot`.
 
 ## GitHub và Vercel
 
