@@ -37,8 +37,8 @@ Original prompt: Build the complete GoldFinger Island team-building web game: 10
 - [x] Run schema in the user's Supabase project (verified through Data API).
 - [ ] Enable Google provider later (deferred by user).
 - [x] Disable Confirm email in Supabase Auth so new email/password accounts receive a session immediately.
-- [ ] Run `supabase/migrations/20260717000100_multiplayer.sql` in the live Supabase project.
-- [ ] Verify the live online flow with two authenticated accounts after the migration is installed.
+- [x] Run `supabase/migrations/20260717000100_multiplayer.sql` in the live Supabase project.
+- [x] Verify the live online flow with two authenticated accounts after the migration is installed.
 - [x] Connect and deploy Vercel project under team `le-nguyen2004`.
 - [x] Add Supabase environment values to Vercel.
 
@@ -57,3 +57,4 @@ Original prompt: Build the complete GoldFinger Island team-building web game: 10
 - Both migrations and the authoritative two-player RPC flow passed in an isolated PGlite PostgreSQL database; authenticated direct coin writes were denied.
 - Supabase CLI is installed, but the machine has no `SUPABASE_ACCESS_TOKEN`; the live multiplayer migration cannot be applied from CLI until Supabase is authenticated.
 - Live Auth settings verified through `/auth/v1/settings`: Email enabled, signup enabled, mailer autoconfirm enabled, Google disabled.
+- Live production verification passed with two temporary authenticated accounts: shared round membership, reward, build, shield, missile launch, Realtime event delivery, impact damage, and attacker reward. Test accounts and related rows were removed afterward.
