@@ -33,7 +33,8 @@ Original prompt: Build the complete GoldFinger Island team-building web game: 10
 - [x] Add responsive cartoon UI and deployment documentation.
 - [x] Push to GitHub repository `lenguyen02042004-lang/goldfinger-island`.
 - [x] Add real Supabase Project URL and Publishable key locally and to Vercel.
-- [ ] Run schema in the user's Supabase project.
+- [x] Run schema in the user's Supabase project (verified through Data API).
+- [ ] Enable Google provider and configure production/local redirect URLs in Supabase Auth.
 - [x] Connect and deploy Vercel project under team `le-nguyen2004`.
 - [ ] Add Supabase environment values to Vercel after a Supabase project is created.
 
