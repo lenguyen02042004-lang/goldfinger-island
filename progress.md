@@ -31,13 +31,15 @@ Original prompt: Build the complete GoldFinger Island team-building web game: 10
 - [x] Verify production build.
 - [x] Verify build, shield, missile, win, reset, and leaderboard flows in Chrome.
 - [x] Add responsive cartoon UI and deployment documentation.
-- [ ] Push to GitHub after account authentication is restored.
+- [x] Push to GitHub repository `lenguyen02042004-lang/goldfinger-island`.
 - [ ] Add real Supabase environment values and run schema in the user's project.
-- [ ] Claim/configure the Vercel preview and add Supabase environment values.
+- [x] Connect and deploy Vercel project under team `le-nguyen2004`.
+- [ ] Add Supabase environment values to Vercel after a Supabase project is created.
 
 ## Verification log
 
-- `npm run build`: passed on 2026-07-17.
+- `npm run build`: passed on 2026-07-17 with Next.js 15.5.20.
+- `npm audit --omit=dev`: 0 vulnerabilities after applying the patched PostCSS override.
 - Standard web-game Playwright client: island build and radar launch passed.
 - Full browser flow: two concurrent builds, shielded incoming missile, outgoing missile reward, all 10 buildings, winner modal, round reset, and persistent win count passed.
 - Desktop screenshots inspected; radar label overlap was fixed and rechecked.
