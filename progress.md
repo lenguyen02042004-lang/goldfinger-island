@@ -6,6 +6,8 @@ Home art direction prompt: Replace the dashboard-like home page with a single-sc
 
 Scene architecture prompt: Rebuild Home as one game-engine-style world scene with an ocean-only background, 12 transparent island objects at hand-authored absolute coordinates, polygon hitboxes, and independent missile, particle, weather, and UI layers. Do not use Grid/Flex or island cards for the world.
 
+Personal island prompt: Rebuild `/island` as a fixed isometric management scene with one large living island, exactly 10 road-connected foundations, absolute-positioned building objects, direct scene interaction, radial actions, construction states, bubbles, particles, and a separate edge HUD.
+
 ## Locked MVP rules
 
 - Starting balance: 1,000 coins.
@@ -50,6 +52,7 @@ Scene architecture prompt: Rebuild Home as one game-engine-style world scene wit
 - [x] Add persistent 12-player rooms, room codes, invite links, admission approval, and room-scoped leaderboards.
 - [x] Rebuild Home as a no-scroll 16:9 premium isometric game canvas with generated map and building assets.
 - [x] Replace the baked island map with an ocean-only scene and 12 independent transparent island objects.
+- [x] Replace the personal island dashboard with a fixed game scene and separate HUD architecture.
 
 ## Verification log
 
@@ -71,3 +74,4 @@ Scene architecture prompt: Rebuild Home as one game-engine-style world scene wit
 - Live Supabase verification passed with temporary accounts for room creation, approval, switching, open joining, independent coin, and shared roster. Test rooms and accounts were removed afterward.
 - Premium Home passed visual checks at 1920x1080 and 1366x768; portrait shows a rotate-device screen. The new dock build action, target selection, radar, and animated missile route were exercised in Chrome without console errors.
 - Layered world scene passed visual checks at 1920x1080, 1366x768, and 1280x720. All 12 islands are independent transparent objects with absolute world coordinates and polygon hitboxes; target selection and dock construction passed in Chrome without console errors.
+- Personal island scene passed visual checks at 1920x1080, 1366x768, and portrait. Exactly 10 absolute building objects, the radial build action, coin spending, construction timer, and landscape fallback passed in Chrome without console errors.
