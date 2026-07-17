@@ -27,16 +27,17 @@ Original prompt: Build the complete GoldFinger Island team-building web game: 10
 
 - [x] Scaffold Next.js 15 project.
 - [x] Implement complete local demo gameplay.
-- [x] Add Supabase integration, Google auth, cloud snapshots, and SQL schema.
+- [x] Add Supabase integration, email/password auth, cloud snapshots, and SQL schema.
 - [x] Verify production build.
 - [x] Verify build, shield, missile, win, reset, and leaderboard flows in Chrome.
 - [x] Add responsive cartoon UI and deployment documentation.
 - [x] Push to GitHub repository `lenguyen02042004-lang/goldfinger-island`.
 - [x] Add real Supabase Project URL and Publishable key locally and to Vercel.
 - [x] Run schema in the user's Supabase project (verified through Data API).
-- [ ] Enable Google provider and configure production/local redirect URLs in Supabase Auth.
+- [ ] Enable Google provider later (deferred by user).
+- [ ] Disable Confirm email in Supabase Auth so new email/password accounts receive a session immediately.
 - [x] Connect and deploy Vercel project under team `le-nguyen2004`.
-- [ ] Add Supabase environment values to Vercel after a Supabase project is created.
+- [x] Add Supabase environment values to Vercel.
 
 ## Verification log
 
@@ -46,3 +47,4 @@ Original prompt: Build the complete GoldFinger Island team-building web game: 10
 - Standard web-game Playwright client: island build and radar launch passed.
 - Full browser flow: two concurrent builds, shielded incoming missile, outgoing missile reward, all 10 buildings, winner modal, round reset, and persistent win count passed.
 - Desktop screenshots inspected; radar label overlap was fixed and rechecked.
+- Email/password login and registration modal verified on desktop and a 390px mobile viewport; no browser console errors.

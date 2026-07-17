@@ -35,7 +35,7 @@ Mở `http://localhost:3000`. Nếu chưa có biến môi trường, game tự c
 
 1. Tạo project tại Supabase.
 2. Mở SQL Editor và chạy toàn bộ [supabase/schema.sql](./supabase/schema.sql).
-3. Trong Authentication > Providers, bật Google.
+3. Trong Authentication > Providers > Email, bật Email và tắt `Confirm email` để người chơi dùng tài khoản ngay sau khi đăng ký.
 4. Thêm URL của local và Vercel vào Authentication > URL Configuration.
 5. Tạo `.env.local` từ `.env.example`:
 
@@ -44,7 +44,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_YOUR_KEY
 ```
 
-Ứng dụng ưu tiên Publishable key mới và vẫn hỗ trợ `NEXT_PUBLIC_SUPABASE_ANON_KEY` cũ. Khi có khóa Supabase, nút `Đăng nhập` xuất hiện và snapshot game được đồng bộ theo tài khoản. Schema đã bật RLS; radar dùng view không chứa `target_slot`.
+Ứng dụng ưu tiên Publishable key mới và vẫn hỗ trợ `NEXT_PUBLIC_SUPABASE_ANON_KEY` cũ. Nút `Đăng nhập` có hai chế độ đăng nhập/đăng ký bằng email và mật khẩu; Google OAuth được để dành cho giai đoạn sau. Schema đã bật RLS; radar dùng view không chứa `target_slot`.
 
 ## GitHub và Vercel
 
