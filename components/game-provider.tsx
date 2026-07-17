@@ -12,16 +12,21 @@ import {
 } from "@/lib/game-engine";
 import {
   claimCloudDailyReward,
+  createCloudRoom,
   fetchMultiplayerState,
   hasAuthenticatedPlayer,
+  joinCloudRoom,
   launchCloudMissile,
+  reviewCloudJoinRequest,
+  selectCloudRoom,
   shieldCloudBuilding,
   shieldCloudIsland,
   startCloudBuild,
   subscribeToMultiplayer,
   unsubscribeFromMultiplayer,
+  updateCloudJoinPolicy,
 } from "@/services/multiplayer";
-import type { GameState, PersistedGame } from "@/types/game";
+import type { GameState, JoinPolicy, PersistedGame } from "@/types/game";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 type GameMode = "loading" | "demo" | "online";
@@ -36,6 +41,11 @@ type GameContextValue = {
   launch: (playerId: string) => void;
   claimReward: () => void;
   newRound: () => void;
+  createRoom: (name: string, joinPolicy: JoinPolicy) => void;
+  joinRoom: (code: string) => void;
+  selectRoom: (code: string) => void;
+  reviewJoinRequest: (requestId: string, approve: boolean) => void;
+  updateJoinPolicy: (joinPolicy: JoinPolicy) => void;
 };
 
 const GameContext = createContext<GameContextValue | null>(null);
@@ -51,7 +61,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const modeRef = useRef<GameMode>("loading");
   const refreshInFlight = useRef(false);
   const refreshQueued = useRef<number | null>(null);
-  const dismissedWinner = useRef(0);
+  const dismissedWinners = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     stateRef.current = state;
@@ -62,7 +72,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   }, [mode]);
 
   const applyCloudState = useCallback((next: GameState) => {
-    if (next.winnerRound && next.winnerRound <= dismissedWinner.current) {
+    const winnerKey = next.room && next.winnerRound
+      ? `${next.room.id}:${next.winnerRound}`
+      : null;
+    if (winnerKey && dismissedWinners.current.has(winnerKey)) {
       next = { ...next, winner: null, winnerRound: null };
     }
     stateRef.current = next;
@@ -87,7 +100,13 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
 
     async function hydrate() {
-      dismissedWinner.current = Number(localStorage.getItem(DISMISSED_WINNER_KEY) ?? 0);
+      try {
+        dismissedWinners.current = new Set(
+          JSON.parse(localStorage.getItem(DISMISSED_WINNER_KEY) ?? "[]") as string[],
+        );
+      } catch {
+        dismissedWinners.current = new Set();
+      }
 
       if (await hasAuthenticatedPlayer()) {
         try {
@@ -224,6 +243,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
           wins: player.wins,
           bestTime: player.bestTime,
         })),
+        room: current.room,
       });
     };
     window.advanceTime = (ms: number) => {
@@ -290,12 +310,47 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     newRound: () => {
       if (mode === "online") {
         const winnerRound = stateRef.current.winnerRound ?? 0;
-        dismissedWinner.current = winnerRound;
-        localStorage.setItem(DISMISSED_WINNER_KEY, String(winnerRound));
+        const roomId = stateRef.current.room?.id;
+        if (winnerRound && roomId) {
+          dismissedWinners.current.add(`${roomId}:${winnerRound}`);
+          localStorage.setItem(DISMISSED_WINNER_KEY, JSON.stringify([...dismissedWinners.current]));
+        }
         setState((current) => ({ ...current, winner: null, winnerRound: null }));
         void refreshCloud();
       } else if (mode === "demo") {
         updateDemo(resetRound);
+      }
+    },
+    createRoom: (name, joinPolicy) => {
+      if (mode === "online") void runCloudAction(() => createCloudRoom(name, joinPolicy));
+    },
+    joinRoom: (code) => {
+      if (mode !== "online" || isBusy) return;
+      setIsBusy(true);
+      setNotice(null);
+      void joinCloudRoom(code)
+        .then((result) => {
+          applyCloudState(result.state);
+          setNotice(
+            result.status === "joined"
+              ? "Đã tham gia trận thành công."
+              : "Đã gửi yêu cầu. Hãy chờ người tạo trận phê duyệt.",
+          );
+        })
+        .catch((error) => setNotice(error instanceof Error ? error.message : "Không thể tham gia trận."))
+        .finally(() => setIsBusy(false));
+    },
+    selectRoom: (code) => {
+      if (mode === "online") void runCloudAction(() => selectCloudRoom(code));
+    },
+    reviewJoinRequest: (requestId, approve) => {
+      if (mode === "online") {
+        void runCloudAction(() => reviewCloudJoinRequest(requestId, approve));
+      }
+    },
+    updateJoinPolicy: (joinPolicy) => {
+      if (mode === "online") {
+        void runCloudAction(() => updateCloudJoinPolicy(joinPolicy));
       }
     },
   }), [isBusy, mode, refreshCloud, runCloudAction, state, updateDemo]);

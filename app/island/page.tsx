@@ -1,5 +1,6 @@
 import { IslandDashboard } from "@/components/island-dashboard";
+import { RoomRequired } from "@/components/room-required";
 
 export default function IslandPage() {
-  return <IslandDashboard />;
+  return <RoomRequired><IslandDashboard /></RoomRequired>;
 }

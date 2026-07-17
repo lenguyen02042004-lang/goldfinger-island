@@ -1,6 +1,15 @@
 import { createBuildings } from "@/lib/game-rules";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import type { BuildingStatus, GameEvent, GameState, MissileStatus, Player } from "@/types/game";
+import type {
+  BuildingStatus,
+  GameEvent,
+  GameRoom,
+  GameState,
+  JoinPolicy,
+  MissileStatus,
+  Player,
+  RoomJoinRequest,
+} from "@/types/game";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 type CloudBuilding = {
@@ -51,6 +60,9 @@ type CloudState = {
   winner: string | null;
   winnerRound: number | null;
   lastSavedAt: number;
+  room: GameRoom | null;
+  myRooms: GameRoom[];
+  joinRequests: RoomJoinRequest[];
 };
 
 type MultiplayerAction =
@@ -59,7 +71,16 @@ type MultiplayerAction =
   | { name: "game_shield_building"; args: { p_slot: number } }
   | { name: "game_shield_island"; args?: never }
   | { name: "game_launch_missile"; args: { p_target_user: string } }
-  | { name: "game_claim_daily_reward"; args?: never };
+  | { name: "game_claim_daily_reward"; args?: never }
+  | { name: "game_create_room"; args: { p_name: string; p_join_policy: JoinPolicy } }
+  | { name: "game_select_room"; args: { p_code: string } }
+  | { name: "game_review_join_request"; args: { p_request_id: string; p_approve: boolean } }
+  | { name: "game_update_join_policy"; args: { p_join_policy: JoinPolicy } };
+
+type JoinRoomResult = {
+  status: "joined" | "pending";
+  state: CloudState;
+};
 
 const PLAYER_COLORS = ["#1aa9e8", "#ef5b5b", "#9b6bdc", "#ff943d", "#22a96b", "#e0a415"];
 
@@ -128,6 +149,22 @@ export function mapCloudState(payload: CloudState): GameState {
     winner: payload.winner,
     winnerRound: payload.winnerRound === null ? null : asNumber(payload.winnerRound),
     lastSavedAt: asNumber(payload.lastSavedAt, Date.now()),
+    room: payload.room
+      ? {
+          ...payload.room,
+          memberCount: asNumber(payload.room.memberCount),
+          maxPlayers: asNumber(payload.room.maxPlayers, 12),
+        }
+      : null,
+    myRooms: (payload.myRooms ?? []).map((room) => ({
+      ...room,
+      memberCount: asNumber(room.memberCount),
+      maxPlayers: asNumber(room.maxPlayers, 12),
+    })),
+    joinRequests: (payload.joinRequests ?? []).map((request) => ({
+      ...request,
+      createdAt: asNumber(request.createdAt),
+    })),
   };
 }
 
@@ -170,6 +207,34 @@ export function claimCloudDailyReward() {
   return runAction({ name: "game_claim_daily_reward" });
 }
 
+export function createCloudRoom(name: string, joinPolicy: JoinPolicy) {
+  return runAction({ name: "game_create_room", args: { p_name: name, p_join_policy: joinPolicy } });
+}
+
+export async function joinCloudRoom(code: string) {
+  const supabase = getSupabaseBrowserClient();
+  if (!supabase) throw new Error("Supabase chưa được cấu hình.");
+  const { data, error } = await supabase.rpc("game_join_room", { p_code: code });
+  if (error) throw new Error(error.message);
+  const result = data as JoinRoomResult;
+  return { status: result.status, state: mapCloudState(result.state) };
+}
+
+export function selectCloudRoom(code: string) {
+  return runAction({ name: "game_select_room", args: { p_code: code } });
+}
+
+export function reviewCloudJoinRequest(requestId: string, approve: boolean) {
+  return runAction({
+    name: "game_review_join_request",
+    args: { p_request_id: requestId, p_approve: approve },
+  });
+}
+
+export function updateCloudJoinPolicy(joinPolicy: JoinPolicy) {
+  return runAction({ name: "game_update_join_policy", args: { p_join_policy: joinPolicy } });
+}
+
 export async function hasAuthenticatedPlayer() {
   const supabase = getSupabaseBrowserClient();
   if (!supabase) return false;
@@ -184,7 +249,8 @@ export function subscribeToMultiplayer(onChange: () => void): RealtimeChannel | 
   const channel = supabase
     .channel(`goldfinger-game-${crypto.randomUUID()}`)
     .on("postgres_changes", { event: "*", schema: "public", table: "game_events" }, onChange)
-    .on("postgres_changes", { event: "*", schema: "public", table: "leaderboard" }, onChange)
+    .on("postgres_changes", { event: "*", schema: "public", table: "room_leaderboard" }, onChange)
+    .on("postgres_changes", { event: "*", schema: "public", table: "room_join_requests" }, onChange)
     .subscribe();
 
   return channel;

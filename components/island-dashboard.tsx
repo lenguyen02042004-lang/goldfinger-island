@@ -19,8 +19,8 @@ export function IslandDashboard() {
     <div className="page-shell inner-page">
       <header className="page-title-row">
         <div>
-          <span className="eyebrow">Căn cứ của bạn · Vòng {state.round}</span>
-          <h1>Đảo Bình Minh</h1>
+          <span className="eyebrow">{state.room?.name} · Vòng {state.round}</span>
+          <h1>Đảo của tôi</h1>
           <p>Hoàn thành từng cặp công trình để mở cấp tiếp theo.</p>
         </div>
         <div className="page-actions">

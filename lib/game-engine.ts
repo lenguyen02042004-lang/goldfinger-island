@@ -51,6 +51,17 @@ export function createInitialState(now = Date.now()): GameState {
     winner: null,
     winnerRound: null,
     lastSavedAt: now,
+    room: {
+      id: "demo-room",
+      code: "DEMO12",
+      name: "Phòng chơi thử",
+      joinPolicy: "open",
+      isCreator: true,
+      memberCount: 4,
+      maxPlayers: 12,
+    },
+    myRooms: [],
+    joinRequests: [],
   };
 }
 

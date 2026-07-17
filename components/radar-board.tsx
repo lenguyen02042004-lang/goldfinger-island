@@ -12,7 +12,7 @@ export function RadarBoard({ compact = false }: { compact?: boolean }) {
     <section className={`panel radar-panel ${compact ? "compact" : ""}`}>
       <div className="panel-heading">
         <div>
-          <span className="eyebrow"><Radio size={15} /> Radar toàn đội</span>
+          <span className="eyebrow"><Radio size={15} /> Radar toàn trận</span>
           <h2>Tên lửa đang bay</h2>
         </div>
         <span className="live-pill"><i /> LIVE</span>

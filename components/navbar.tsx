@@ -1,7 +1,7 @@
 "use client";
 
 import { useGame } from "@/components/game-provider";
-import { Coins, Crosshair, Home, Map, Shield, Trophy } from "lucide-react";
+import { Coins, Crosshair, Home, Map, Shield, Trophy, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AuthButton } from "./auth-button";
@@ -34,6 +34,11 @@ export function Navbar() {
           ))}
         </nav>
         <div className="top-stats">
+          {state.room && (
+            <Link href="/" className="nav-room-code" title={state.room.name}>
+              <Users size={15} /> {state.room.code}
+            </Link>
+          )}
           <span className={`connection-pill ${mode}`} title={mode === "online" ? "Đã kết nối Supabase Realtime" : "Chế độ chơi cục bộ"}>
             <i /> {mode === "online" ? "ONLINE" : mode === "loading" ? "..." : "DEMO"}
           </span>

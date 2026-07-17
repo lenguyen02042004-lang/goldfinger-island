@@ -1,5 +1,7 @@
 Original prompt: Build the complete GoldFinger Island team-building web game: 10 required buildings, 1000 starting coins, maximum 2 concurrent builds, missiles, shields, public radar, persistent leaderboard, Supabase, Vercel, and GitHub. Bright 2D cartoon presentation.
 
+Room expansion prompt: Add persistent match rooms with shareable codes and invite links, at most 12 equal players, open or creator-approved admission, and a leaderboard permanently scoped to each room.
+
 ## Locked MVP rules
 
 - Starting balance: 1,000 coins.
@@ -41,6 +43,7 @@ Original prompt: Build the complete GoldFinger Island team-building web game: 10
 - [x] Verify the live online flow with two authenticated accounts after the migration is installed.
 - [x] Connect and deploy Vercel project under team `le-nguyen2004`.
 - [x] Add Supabase environment values to Vercel.
+- [x] Add persistent 12-player rooms, room codes, invite links, admission approval, and room-scoped leaderboards.
 
 ## Verification log
 
@@ -58,3 +61,5 @@ Original prompt: Build the complete GoldFinger Island team-building web game: 10
 - Supabase CLI is installed, but the machine has no `SUPABASE_ACCESS_TOKEN`; the live multiplayer migration cannot be applied from CLI until Supabase is authenticated.
 - Live Auth settings verified through `/auth/v1/settings`: Email enabled, signup enabled, mailer autoconfirm enabled, Google disabled.
 - Live production verification passed with two temporary authenticated accounts: shared round membership, reward, build, shield, missile launch, Realtime event delivery, impact damage, and attacker reward. Test accounts and related rows were removed afterward.
+- Room migration passed isolated PostgreSQL checks for open joining, approval, room switching, room-scoped coin, direct-write denial, and rejection of player 13.
+- Live Supabase verification passed with temporary accounts for room creation, approval, switching, open joining, independent coin, and shared roster. Test rooms and accounts were removed afterward.

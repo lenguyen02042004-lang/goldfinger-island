@@ -41,6 +41,27 @@ export type GameEvent = {
   message: string;
 };
 
+export type JoinPolicy = "open" | "approval";
+
+export type GameRoom = {
+  id: string;
+  code: string;
+  name: string;
+  joinPolicy: JoinPolicy;
+  isCreator: boolean;
+  memberCount: number;
+  maxPlayers: number;
+};
+
+export type RoomJoinRequest = {
+  id: string;
+  roomId: string;
+  roomName: string;
+  userId: string;
+  userName: string;
+  createdAt: number;
+};
+
 export type GameState = {
   now: number;
   roundStartedAt: number;
@@ -55,6 +76,9 @@ export type GameState = {
   winner: string | null;
   winnerRound: number | null;
   lastSavedAt: number;
+  room: GameRoom | null;
+  myRooms: GameRoom[];
+  joinRequests: RoomJoinRequest[];
 };
 
 export type PersistedGame = Omit<GameState, "now">;

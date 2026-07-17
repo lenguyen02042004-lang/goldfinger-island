@@ -5,6 +5,7 @@ import { EventFeed } from "@/components/event-feed";
 import { GameButton } from "@/components/game-button";
 import { LeaderboardTable } from "@/components/leaderboard-table";
 import { RadarBoard } from "@/components/radar-board";
+import { RoomHub } from "@/components/room-hub";
 import { DAILY_REWARD, formatTime } from "@/lib/game-rules";
 import { ArrowRight, CalendarCheck, Castle, ShieldCheck, Sparkles } from "lucide-react";
 import Link from "next/link";
@@ -18,16 +19,17 @@ export function HomeDashboard() {
 
   return (
     <div className="page-shell home-page">
+      <RoomHub />
       <section className="hero-game">
         <div className="cloud cloud-one" />
         <div className="cloud cloud-two" />
         <div className="hero-copy">
-          <span className="round-pill"><Sparkles size={16} /> Vòng {state.round} đang diễn ra</span>
+          <span className="round-pill"><Sparkles size={16} /> Vòng {state.round || 1} đang diễn ra</span>
           <h1>GoldFinger Island</h1>
           <p>Xây căn cứ, bật lá chắn và tạo những màn đấu trí vui hết cỡ cùng đồng đội.</p>
           <div className="hero-actions">
-            <Link href="/island"><GameButton tone="orange" icon={<Castle size={20} />}>Vào đảo của tôi</GameButton></Link>
-            <GameButton tone="white" icon={<CalendarCheck size={19} />} onClick={claimReward} disabled={isBusy || claimed}>
+            <Link href={state.room ? "/island" : "#"}><GameButton tone="orange" icon={<Castle size={20} />} disabled={!state.room}>Vào đảo của tôi</GameButton></Link>
+            <GameButton tone="white" icon={<CalendarCheck size={19} />} onClick={claimReward} disabled={isBusy || claimed || !state.room}>
               {claimed ? "Đã điểm danh" : `Nhận ${DAILY_REWARD} coin`}
             </GameButton>
           </div>

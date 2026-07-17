@@ -2,6 +2,15 @@
 
 Trò chơi team-building 2D: xây đủ 10 công trình, phòng thủ đảo và dùng tên lửa để cản đối thủ. Người hoàn thành đầu tiên thắng vòng; bảng xếp hạng được giữ lại khi vòng mới bắt đầu.
 
+## Phòng trận
+
+- Mỗi phòng có mã riêng và link mời dạng `/?room=ABC123`.
+- Tối đa 12 người chơi trong một phòng.
+- Người tạo chọn tham gia tự do hoặc cần phê duyệt.
+- Sau khi vào phòng, mọi người có quyền gameplay ngang nhau.
+- Một tài khoản có thể tham gia nhiều phòng và chuyển phòng tại Trung tâm.
+- Mỗi phòng có các vòng reset riêng và bảng xếp hạng được giữ vĩnh viễn trong phòng đó.
+
 ## Chạy local
 
 Yêu cầu Node.js 20 trở lên.
@@ -34,7 +43,7 @@ Mở `http://localhost:3000`. Nếu chưa có biến môi trường, game tự c
 ## Kết nối Supabase
 
 1. Tạo project tại Supabase.
-2. Mở SQL Editor và chạy lần lượt [migration nền tảng](./supabase/migrations/20260717000000_schema.sql) và [migration multiplayer](./supabase/migrations/20260717000100_multiplayer.sql). Project hiện tại đã có migration nền tảng nên chỉ cần chạy file multiplayer.
+2. Mở SQL Editor và chạy lần lượt [migration nền tảng](./supabase/migrations/20260717000000_schema.sql), [migration multiplayer](./supabase/migrations/20260717000100_multiplayer.sql), và [migration phòng trận](./supabase/migrations/20260717000200_game_rooms.sql).
 3. Trong Authentication > Providers > Email, bật Email và tắt `Confirm email` để người chơi dùng tài khoản ngay sau khi đăng ký.
 4. Thêm URL của local và Vercel vào Authentication > URL Configuration.
 5. Tạo `.env.local` từ `.env.example`:

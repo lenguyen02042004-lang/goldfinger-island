@@ -11,8 +11,8 @@ export function LeaderboardTable({ compact = false }: { compact?: boolean }) {
     <section className="panel leaderboard-panel">
       <div className="panel-heading">
         <div>
-          <span className="eyebrow"><Trophy size={15} /> Thành tích vĩnh viễn</span>
-          <h2>Bảng xếp hạng</h2>
+          <span className="eyebrow"><Trophy size={15} /> Thành tích vĩnh viễn theo trận</span>
+          <h2>{state.room?.name ?? "Bảng xếp hạng"}</h2>
         </div>
       </div>
       <div className="leaderboard-list">

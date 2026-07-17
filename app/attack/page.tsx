@@ -1,5 +1,6 @@
 import { AttackDashboard } from "@/components/attack-dashboard";
+import { RoomRequired } from "@/components/room-required";
 
 export default function AttackPage() {
-  return <AttackDashboard />;
+  return <RoomRequired><AttackDashboard /></RoomRequired>;
 }

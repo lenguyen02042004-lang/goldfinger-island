@@ -27,6 +27,7 @@ await db.exec(`
 for (const migration of [
   "supabase/migrations/20260717000000_schema.sql",
   "supabase/migrations/20260717000100_multiplayer.sql",
+  "supabase/migrations/20260717000200_game_rooms.sql",
 ]) {
   const sql = (await readFile(migration, "utf8"))
     .replace('create extension if not exists "pgcrypto";', "");
@@ -52,11 +53,53 @@ async function asPlayer(playerId, sql, params = []) {
   }
 }
 
+const createdRoom = await asPlayer(
+  playerOne,
+  "select public.game_create_room($1, $2) as state",
+  ["Đội GoldFinger", "open"],
+);
+const roomCode = createdRoom.rows[0].state.room.code;
+const joinedRoom = await asPlayer(
+  playerTwo,
+  "select public.game_join_room($1) as result",
+  [roomCode],
+);
 const firstState = await asPlayer(playerOne, "select public.game_get_state() as state");
 const secondState = await asPlayer(playerTwo, "select public.game_get_state() as state");
 
 if (firstState.rows[0].state.me.coin !== 1000 || secondState.rows[0].state.me.coin !== 1000) {
   throw new Error("New players did not receive the starting balance.");
+}
+if (
+  joinedRoom.rows[0].result.status !== "joined"
+  || firstState.rows[0].state.room.memberCount !== 2
+  || firstState.rows[0].state.room.maxPlayers !== 12
+) {
+  throw new Error("Open room joining or the 12-player room limit metadata failed.");
+}
+
+for (let index = 3; index <= 12; index += 1) {
+  const id = `${String(index).padStart(8, "0")}-3333-4333-8333-${String(index).padStart(12, "0")}`;
+  await db.query(
+    "insert into auth.users (id, email, raw_user_meta_data) values ($1, $2, $3)",
+    [id, `player${index}@example.com`, JSON.stringify({ full_name: `Player ${index}` })],
+  );
+  await asPlayer(id, "select public.game_join_room($1)", [roomCode]);
+}
+
+const overflowPlayer = "00000013-3333-4333-8333-000000000013";
+await db.query(
+  "insert into auth.users (id, email, raw_user_meta_data) values ($1, $2, $3)",
+  [overflowPlayer, "player13@example.com", JSON.stringify({ full_name: "Player 13" })],
+);
+let roomLimitBlocked = false;
+try {
+  await asPlayer(overflowPlayer, "select public.game_join_room($1)", [roomCode]);
+} catch (error) {
+  roomLimitBlocked = String(error).includes("12");
+}
+if (!roomLimitBlocked) {
+  throw new Error("A thirteenth player could join a full room.");
 }
 
 const rewardState = await asPlayer(playerOne, "select public.game_claim_daily_reward() as state");
@@ -73,7 +116,10 @@ if (buildState.rows[0].state.me.coin !== 990) {
   throw new Error("Build RPC did not deduct the server-side cost.");
 }
 
-const activeRound = await db.query("select id from public.rounds where status = 'active'");
+const activeRound = await db.query(
+  "select id from public.rounds where room_id = $1 and status = 'active'",
+  [firstState.rows[0].state.room.id],
+);
 const roundId = activeRound.rows[0].id;
 
 await db.query(
@@ -126,5 +172,38 @@ if (!directCoinWriteBlocked) {
   throw new Error("Authenticated clients can still update coin directly.");
 }
 
-console.log("Authoritative multiplayer migration checks passed.");
+const approvalRoom = await asPlayer(
+  playerOne,
+  "select public.game_create_room($1, $2) as state",
+  ["Phòng cần duyệt", "approval"],
+);
+const approvalCode = approvalRoom.rows[0].state.room.code;
+const pendingJoin = await asPlayer(
+  playerTwo,
+  "select public.game_join_room($1) as result",
+  [approvalCode],
+);
+if (pendingJoin.rows[0].result.status !== "pending") {
+  throw new Error("Approval room did not create a pending request.");
+}
+
+const ownerState = await asPlayer(playerOne, "select public.game_get_state() as state");
+const requestId = ownerState.rows[0].state.joinRequests[0]?.id;
+if (!requestId) throw new Error("Room creator could not see the pending request.");
+
+await asPlayer(
+  playerOne,
+  "select public.game_review_join_request($1, true) as state",
+  [requestId],
+);
+const approvedRoom = await asPlayer(
+  playerTwo,
+  "select public.game_select_room($1) as state",
+  [approvalCode],
+);
+if (approvedRoom.rows[0].state.room.memberCount !== 2) {
+  throw new Error("Approved player was not added to the room.");
+}
+
+console.log("Authoritative room multiplayer migration checks passed.");
 await db.close();
