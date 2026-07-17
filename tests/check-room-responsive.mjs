@@ -35,7 +35,7 @@ for (const scenario of scenarios) {
     if (!box || box.x < 0 || box.y < 0 || box.x + box.width > scenario.width || box.y + box.height > scenario.height) {
       throw new Error(`Game canvas overflows the ${scenario.name} viewport.`);
     }
-    const playerSlots = await page.locator(".map-island").count();
+    const playerSlots = await page.locator(".scene-island").count();
     const dockSlots = await page.locator(".dock-building").count();
     if (playerSlots !== 12 || dockSlots !== 10) {
       throw new Error(`Expected 12 islands and 10 building slots, found ${playerSlots} and ${dockSlots}.`);

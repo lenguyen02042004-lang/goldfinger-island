@@ -1,6 +1,7 @@
 "use client";
 
 import { AuthButton } from "@/components/auth-button";
+import { GameScene } from "@/components/game-scene/game-scene";
 import { GameButton } from "@/components/game-button";
 import { useGame } from "@/components/game-provider";
 import { RoomHub } from "@/components/room-hub";
@@ -32,32 +33,11 @@ import {
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
-const WAITING_NAMES = [
-  "Đang chờ", "Đang chờ", "Đang chờ", "Đang chờ",
-  "Đang chờ", "Đang chờ", "Đang chờ", "Đang chờ",
-  "Đang chờ", "Đang chờ", "Đang chờ", "Đang chờ",
-];
-
 const SPRITE_POSITIONS = ["0%", "25%", "50%", "75%", "100%"];
 
 function spriteTier(completed: number) {
   if (completed <= 0) return -1;
   return Math.min(4, Math.floor((completed - 1) / 2));
-}
-
-function islandPoint(index: number) {
-  const col = index % 4;
-  const row = Math.floor(index / 4);
-  return { x: 118 + col * 243, y: 128 + row * 188 };
-}
-
-function missilePath(fromIndex: number, toIndex: number) {
-  const from = islandPoint(Math.max(0, fromIndex));
-  const to = islandPoint(Math.max(0, toIndex));
-  const lift = Math.max(72, Math.abs(to.x - from.x) * 0.24);
-  const controlX = (from.x + to.x) / 2;
-  const controlY = Math.min(from.y, to.y) - lift;
-  return `M ${from.x} ${from.y} Q ${controlX} ${controlY} ${to.x} ${to.y}`;
 }
 
 export function HomeDashboard() {
@@ -84,10 +64,6 @@ export function HomeDashboard() {
       </div>
 
       <div className="game-world">
-        <div className="ocean-shimmer" />
-        <div className="floating-cloud cloud-a" />
-        <div className="floating-cloud cloud-b" />
-
         <header className="war-topbar">
           <Link href="/" className="war-logo" aria-label="GoldFinger Island War">
             <span>GOLDFINGER</span>
@@ -126,68 +102,14 @@ export function HomeDashboard() {
           <b>{state.room?.code ?? "------"}</b>
         </button>
 
-        <main className="island-map" aria-label="Bản đồ 12 đảo">
-          <div className="island-grid">
-            {slots.map((player, index) => {
-              const isOwn = player?.id === "you";
-              const isSelected = player?.id === selectedPlayer;
-              const tier = spriteTier(player?.buildings ?? 0);
-              return (
-                <motion.button
-                  key={player?.id ?? `waiting-${index}`}
-                  className={`map-island ${isOwn ? "own" : ""} ${isSelected ? "selected" : ""} ${player ? "" : "waiting"}`}
-                  onClick={() => player && !isOwn && setSelectedPlayer(player.id)}
-                  whileHover={player ? { y: -5, scale: 1.035 } : undefined}
-                  whileTap={player ? { scale: 0.97 } : undefined}
-                  transition={{ type: "spring", stiffness: 330, damping: 18 }}
-                  aria-label={player ? `Đảo của ${player.name}` : "Vị trí đang chờ người chơi"}
-                >
-                  <span className="island-nameplate">
-                    <i>{index + 1}</i>
-                    <b>{isOwn ? "Tôi (Bạn)" : player?.name ?? WAITING_NAMES[index]}</b>
-                  </span>
-                  {tier >= 0 ? (
-                    <motion.span
-                      className="island-building-sprite"
-                      style={{ backgroundPositionX: SPRITE_POSITIONS[tier] }}
-                      initial={{ scale: 0.65, y: 12 }}
-                      animate={{ scale: 1, y: [0, -2, 0] }}
-                      transition={{ scale: { type: "spring", bounce: 0.45 }, y: { duration: 3.2, repeat: Infinity } }}
-                    />
-                  ) : (
-                    <span className="island-silhouette">⌂</span>
-                  )}
-                  <span className="island-build-count">{player?.buildings ?? 0}/10</span>
-                </motion.button>
-              );
-            })}
-          </div>
-
-          <svg className="missile-flight-layer" viewBox="0 0 1000 620" preserveAspectRatio="none" aria-hidden="true">
-            {flying.map((missile) => {
-              const fromIndex = slots.findIndex((player) => player && (player.name === missile.from || (missile.from === "Bạn" && player.id === "you")));
-              const toIndex = slots.findIndex((player) => player && (player.name === missile.to || (missile.to === "Bạn" && player.id === "you")));
-              const path = missilePath(fromIndex, toIndex);
-              const duration = Math.max(1, (missile.arrivesAt - missile.launchedAt) / 1000);
-              const elapsedFlight = Math.max(0, (state.now - missile.launchedAt) / 1000);
-              return (
-                <g key={missile.id}>
-                  <path d={path} className="rocket-arc" />
-                  <text className="flying-game-rocket" fontSize="34">
-                    🚀
-                    <animateMotion
-                      path={path}
-                      dur={`${duration}s`}
-                      begin={`-${elapsedFlight}s`}
-                      rotate="auto"
-                      fill="freeze"
-                    />
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-        </main>
+        <GameScene
+          players={slots}
+          buildings={state.buildings}
+          missiles={flying}
+          now={state.now}
+          selectedPlayer={selectedPlayer}
+          onSelectPlayer={setSelectedPlayer}
+        />
 
         <aside className="war-radar">
           <div className="war-panel-title danger"><Radio size={19} /><b>LIVE RADAR</b><i /></div>

@@ -1773,7 +1773,7 @@ body:has(.game-stage) main {
 
 .game-world {
   aspect-ratio: 16 / 9;
-  background: url("/island-war-map.png") center / 100% 100% no-repeat;
+  background: #149fd7;
   box-shadow: 0 0 45px rgba(0, 54, 86, .35);
   color: #fff;
   flex: 0 0 auto;
@@ -1785,54 +1785,310 @@ body:has(.game-stage) main {
   width: min(100vw, 177.778svh);
 }
 
-.game-world button,
-.game-world a {
-  font-family: inherit;
-}
-
-.ocean-shimmer {
-  animation: ocean-shift 8s ease-in-out infinite alternate;
-  background:
-    repeating-linear-gradient(112deg, transparent 0 38px, rgba(255,255,255,.08) 41px 43px, transparent 46px 90px);
-  inset: 9% 0 0;
-  mix-blend-mode: screen;
-  opacity: .5;
-  pointer-events: none;
+.scene-root,
+.scene-ocean-layer,
+.scene-wave-layer,
+.scene-island-layer,
+.scene-particle-layer,
+.scene-weather-layer {
+  inset: 0;
   position: absolute;
 }
 
-@keyframes ocean-shift {
+.scene-root {
+  overflow: hidden;
+  z-index: 0;
+}
+
+.scene-ocean-layer {
+  background: url("/ocean-world.png") center / 100% 100% no-repeat;
+  z-index: 1;
+}
+
+.scene-wave-layer {
+  animation: scene-wave-drift 9s ease-in-out infinite alternate;
+  background:
+    repeating-linear-gradient(114deg, transparent 0 54px, rgba(255,255,255,.08) 57px 59px, transparent 62px 124px);
+  mix-blend-mode: screen;
+  opacity: .5;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes scene-wave-drift {
   from { transform: translate3d(-1.5%, 0, 0); }
   to { transform: translate3d(1.5%, .7%, 0); }
 }
 
-.floating-cloud {
-  animation: cloud-drift 18s ease-in-out infinite alternate;
+.scene-island-layer {
+  pointer-events: none;
+  z-index: 10;
+}
+
+.scene-island {
+  pointer-events: none;
+  position: absolute;
+  z-index: var(--island-z);
+}
+
+.island-hitbox {
+  background: transparent;
+  border: 0;
+  clip-path: polygon(8% 45%, 18% 23%, 38% 8%, 66% 9%, 88% 27%, 99% 57%, 91% 79%, 70% 94%, 43% 99%, 18% 89%, 3% 68%);
+  cursor: pointer;
+  inset: 0;
+  padding: 0;
+  pointer-events: auto;
+  position: absolute;
+  z-index: 1;
+}
+
+.scene-island.waiting .island-hitbox {
+  cursor: default;
+  opacity: .76;
+}
+
+.island-ground {
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  user-select: none;
+  width: 100%;
+  z-index: 1;
+}
+
+.scene-island.own .island-ground {
+  filter: drop-shadow(0 0 13px #ffe52e) drop-shadow(0 0 22px rgba(255,218,35,.72));
+}
+
+.scene-island.selected .island-ground {
+  filter: drop-shadow(0 0 12px #ff7048) drop-shadow(0 0 21px rgba(255,83,45,.7));
+}
+
+.island-object-glow {
+  animation: scene-island-pulse 2s ease-in-out infinite;
+  border: 4px solid transparent;
+  border-radius: 50%;
+  bottom: 7%;
+  left: 8%;
+  pointer-events: none;
+  position: absolute;
+  right: 8%;
+  top: 29%;
+  z-index: 2;
+}
+
+.scene-island.own .island-object-glow {
+  border-color: #fff128;
+  box-shadow: 0 0 24px #ffe328, inset 0 0 18px rgba(255,229,43,.6);
+}
+
+.scene-island.selected .island-object-glow {
+  border-color: #ff6a43;
+  box-shadow: 0 0 24px #ff5a39;
+}
+
+@keyframes scene-island-pulse {
+  50% { opacity: .68; transform: scale(1.035); }
+}
+
+.island-building-layer {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 4;
+}
+
+.scene-building {
+  background-image: url("/building-sprites.png");
+  background-repeat: no-repeat;
+  background-size: 500% 100%;
+  display: block;
+  filter: drop-shadow(0 3px 2px rgba(0,62,45,.25));
+  height: 18%;
+  margin-left: -5.5%;
+  margin-top: -14%;
+  position: absolute;
+  width: 11%;
+  z-index: 1;
+}
+
+.scene-building svg {
+  background: #3db64a;
+  border: 1px solid #fff;
+  border-radius: 50%;
+  bottom: -2px;
+  color: #fff;
+  padding: 1px;
+  position: absolute;
+  right: -2px;
+}
+
+.scene-building.building svg {
+  animation: construction-bounce .8s ease-in-out infinite alternate;
+  background: #ff9b24;
+}
+
+@keyframes construction-bounce {
+  to { transform: translateY(-3px) rotate(8deg); }
+}
+
+.scene-nameplate {
+  align-items: center;
+  background: linear-gradient(#155b8c, #063a68);
+  border: 2px solid #003258;
+  border-radius: 9px;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.2), 0 4px 9px rgba(0,45,82,.28);
+  display: flex;
+  font-size: clamp(10px, .82vw, 15px);
+  height: 12%;
+  left: 22%;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  right: 22%;
+  top: 2%;
+  z-index: 6;
+}
+
+.scene-nameplate i {
+  align-items: center;
+  align-self: stretch;
+  background: linear-gradient(#3ed6ff, #0781d4);
+  border-right: 2px solid #00355e;
+  display: flex;
+  font-style: normal;
+  justify-content: center;
+  width: 25%;
+}
+
+.scene-nameplate b {
+  overflow: hidden;
+  padding: 0 7px;
+  text-overflow: ellipsis;
+  text-shadow: 0 2px 0 #153c5e;
+  white-space: nowrap;
+}
+
+.scene-island.own .scene-nameplate {
+  background: linear-gradient(#6ed936, #278e22);
+  border-color: #fff56b;
+}
+
+.scene-build-count {
+  background: rgba(4,61,89,.84);
+  border: 1px solid rgba(255,255,255,.5);
+  border-radius: 5px;
+  bottom: 22%;
+  font-size: 10px;
+  padding: 3px 6px;
+  pointer-events: none;
+  position: absolute;
+  right: 15%;
+  z-index: 7;
+}
+
+.scene-missile-layer {
+  height: 100%;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+  z-index: 55;
+}
+
+.scene-rocket-arc {
+  fill: none;
+  opacity: .72;
+  stroke: #fff;
+  stroke-dasharray: 10 14;
+  stroke-linecap: round;
+  stroke-width: 5;
+}
+
+.scene-flying-rocket {
+  filter: drop-shadow(-8px 6px 0 rgba(255,255,255,.72)) drop-shadow(-14px 10px 0 rgba(255,104,36,.8));
+}
+
+.rocket-smoke {
+  fill: rgba(255,255,255,.72);
+  filter: blur(2px);
+}
+
+.scene-particle-layer,
+.scene-weather-layer {
+  pointer-events: none;
+}
+
+.scene-particle-layer { z-index: 58; }
+.scene-weather-layer { z-index: 60; }
+
+.sea-spark {
+  animation: sea-sparkle 3s ease-in-out infinite;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 11px #fff;
+  height: 5px;
+  opacity: 0;
+  position: absolute;
+  width: 5px;
+}
+
+.spark-one { left: 31%; top: 36%; }
+.spark-two { animation-delay: -1s; left: 67%; top: 55%; }
+.spark-three { animation-delay: -2s; left: 47%; top: 72%; }
+
+@keyframes sea-sparkle {
+  35%, 65% { opacity: .9; transform: scale(1.6); }
+}
+
+.scene-cloud {
+  animation: scene-cloud-float 20s ease-in-out infinite alternate;
   background: rgba(255,255,255,.82);
   border-radius: 50%;
   filter: blur(1px);
-  height: 3%;
-  pointer-events: none;
+  height: 32px;
   position: absolute;
-  width: 6%;
+  width: 88px;
 }
 
-.floating-cloud::before,
-.floating-cloud::after {
+.scene-cloud::before,
+.scene-cloud::after {
   background: inherit;
   border-radius: 50%;
   content: "";
   position: absolute;
 }
 
-.floating-cloud::before { height: 130%; left: 18%; top: -45%; width: 46%; }
-.floating-cloud::after { height: 100%; right: 8%; top: -20%; width: 40%; }
-.cloud-a { left: -2%; top: 32%; }
-.cloud-b { animation-delay: -9s; right: 14%; top: 7%; transform: scale(.65); }
+.scene-cloud::before { height: 42px; left: 18px; top: -19px; width: 44px; }
+.scene-cloud::after { height: 32px; right: 7px; top: -10px; width: 37px; }
+.weather-cloud-one { left: -25px; top: 310px; }
+.weather-cloud-two { animation-delay: -10s; right: 270px; top: 75px; transform: scale(.7); }
 
-@keyframes cloud-drift {
-  from { translate: -7% 0; }
-  to { translate: 18% 7%; }
+@keyframes scene-cloud-float {
+  from { translate: -9px 0; }
+  to { translate: 32px 9px; }
+}
+
+.bird-flock {
+  animation: bird-crossing 17s ease-in-out infinite;
+  color: #fff;
+  font-size: 28px;
+  left: -80px;
+  position: absolute;
+  top: 180px;
+}
+
+@keyframes bird-crossing {
+  to { transform: translate(2050px, 95px); }
+}
+
+.game-world button,
+.game-world a {
+  font-family: inherit;
 }
 
 .war-topbar {
@@ -1845,7 +2101,7 @@ body:has(.game-stage) main {
   position: absolute;
   right: 1%;
   top: .8%;
-  z-index: 40;
+  z-index: 100;
 }
 
 .war-logo {
@@ -1967,7 +2223,7 @@ body:has(.game-stage) main {
   padding: .5em .8em;
   position: absolute;
   top: 10%;
-  z-index: 35;
+  z-index: 101;
 }
 
 .room-badge span {
@@ -1981,168 +2237,12 @@ body:has(.game-stage) main {
   margin-left: auto;
 }
 
-.island-map {
-  inset: 10% 18.2% 17% 0;
-  min-height: 0;
-  position: absolute;
-  z-index: 5;
-}
-
-.island-grid {
-  bottom: 2%;
-  display: grid;
-  gap: 1% 1.7%;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  left: 4%;
-  position: absolute;
-  right: 1.5%;
-  top: 4%;
-}
-
-.map-island {
-  background: transparent;
-  border: 0;
-  color: #fff;
-  cursor: pointer;
-  min-height: 0;
-  padding: 0;
-  position: relative;
-}
-
-.map-island.waiting {
-  cursor: default;
-  opacity: .72;
-}
-
-.map-island.own::after,
-.map-island.selected::after {
-  animation: own-island-glow 2.2s ease-in-out infinite;
-  border: .32em solid #ffe739;
-  border-radius: 50%;
-  bottom: 9%;
-  box-shadow: 0 0 1.3em #ffdf27, inset 0 0 .8em rgba(255,230,60,.65);
-  content: "";
-  left: 9%;
-  pointer-events: none;
-  position: absolute;
-  right: 9%;
-  top: 25%;
-}
-
-.map-island.selected::after {
-  border-color: #ff754f;
-  box-shadow: 0 0 1.2em #ff6a43;
-}
-
-@keyframes own-island-glow {
-  50% { opacity: .72; transform: scale(1.035); }
-}
-
-.island-nameplate {
-  align-items: center;
-  background: linear-gradient(#155b8c, #063a68);
-  border: .14em solid #003258;
-  border-radius: .62em;
-  box-shadow: inset 0 .12em 0 rgba(255,255,255,.2), 0 .25em .55em rgba(0,45,82,.28);
-  display: flex;
-  font-size: 1.15em;
-  left: 18%;
-  min-height: 18%;
-  overflow: hidden;
-  position: absolute;
-  right: 18%;
-  top: 1%;
-  z-index: 4;
-}
-
-.island-nameplate i {
-  align-items: center;
-  align-self: stretch;
-  background: linear-gradient(#3ed6ff, #0781d4);
-  border-right: .13em solid #00355e;
-  display: flex;
-  font-style: normal;
-  justify-content: center;
-  width: 25%;
-}
-
-.island-nameplate b {
-  overflow: hidden;
-  padding: 0 .4em;
-  text-overflow: ellipsis;
-  text-shadow: 0 .13em 0 #153c5e;
-  white-space: nowrap;
-}
-
-.map-island.own .island-nameplate {
-  background: linear-gradient(#6ed936, #278e22);
-  border-color: #fff56b;
-}
-
-.island-building-sprite,
 .mini-building-sprite,
 .dock-sprite {
   background-image: url("/building-sprites.png");
   background-repeat: no-repeat;
   background-size: 500% 100%;
   display: block;
-}
-
-.island-building-sprite {
-  bottom: 4%;
-  height: 76%;
-  left: 12%;
-  pointer-events: none;
-  position: absolute;
-  width: 76%;
-  z-index: 3;
-}
-
-.island-silhouette {
-  bottom: 19%;
-  color: #43595d;
-  filter: drop-shadow(0 .15em 0 rgba(255,255,255,.4));
-  font-size: 5em;
-  left: 0;
-  opacity: .45;
-  position: absolute;
-  right: 0;
-}
-
-.island-build-count {
-  background: rgba(4, 61, 89, .82);
-  border: .1em solid rgba(255,255,255,.5);
-  border-radius: .5em;
-  bottom: 7%;
-  font-size: .7em;
-  padding: .25em .55em;
-  position: absolute;
-  right: 13%;
-  z-index: 5;
-}
-
-.missile-flight-layer {
-  height: 100%;
-  inset: 0;
-  overflow: visible;
-  pointer-events: none;
-  position: absolute;
-  width: 100%;
-  z-index: 20;
-}
-
-.rocket-arc {
-  fill: none;
-  opacity: .72;
-  stroke: #fff;
-  stroke-dasharray: 9 13;
-  stroke-linecap: round;
-  stroke-width: 4;
-}
-
-.flying-game-rocket {
-  filter: drop-shadow(-7px 6px 0 rgba(255,255,255,.72)) drop-shadow(-12px 9px 0 rgba(255,104,36,.8));
 }
 
 .war-radar {
@@ -2158,7 +2258,7 @@ body:has(.game-stage) main {
   right: 1%;
   top: 10.8%;
   width: 16.8%;
-  z-index: 30;
+  z-index: 100;
 }
 
 .war-panel-title {
@@ -2226,7 +2326,7 @@ body:has(.game-stage) main {
   overflow: hidden;
   position: absolute;
   width: 16%;
-  z-index: 35;
+  z-index: 100;
 }
 
 .player-mini-card .war-panel-title { color: #fff; }
@@ -2247,7 +2347,7 @@ body:has(.game-stage) main {
   padding: .55em .7em .7em;
   position: absolute;
   right: 18.5%;
-  z-index: 35;
+  z-index: 100;
 }
 
 .dock-title {
@@ -2351,7 +2451,7 @@ body:has(.game-stage) main {
   position: absolute;
   right: 1%;
   width: 16.8%;
-  z-index: 38;
+  z-index: 101;
 }
 
 .missile-launch-button {
@@ -2407,7 +2507,7 @@ body:has(.game-stage) main {
   padding: .55em .7em;
   position: absolute;
   transform: translateX(-50%);
-  z-index: 50;
+  z-index: 110;
 }
 
 .target-toast > a { background: #ef553c; border-radius: .45em; color: #fff; padding: .35em .6em; }

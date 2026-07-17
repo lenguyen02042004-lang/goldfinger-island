@@ -4,6 +4,8 @@ Room expansion prompt: Add persistent match rooms with shareable codes and invit
 
 Home art direction prompt: Replace the dashboard-like home page with a single-screen 1920x1080 premium casual strategy game board: 12 isometric tropical islands, animated missile paths, live radar, top resources, and a 10-building dock. Match the supplied colorful chibi reference and avoid web-dashboard styling.
 
+Scene architecture prompt: Rebuild Home as one game-engine-style world scene with an ocean-only background, 12 transparent island objects at hand-authored absolute coordinates, polygon hitboxes, and independent missile, particle, weather, and UI layers. Do not use Grid/Flex or island cards for the world.
+
 ## Locked MVP rules
 
 - Starting balance: 1,000 coins.
@@ -47,6 +49,7 @@ Home art direction prompt: Replace the dashboard-like home page with a single-sc
 - [x] Add Supabase environment values to Vercel.
 - [x] Add persistent 12-player rooms, room codes, invite links, admission approval, and room-scoped leaderboards.
 - [x] Rebuild Home as a no-scroll 16:9 premium isometric game canvas with generated map and building assets.
+- [x] Replace the baked island map with an ocean-only scene and 12 independent transparent island objects.
 
 ## Verification log
 
@@ -67,3 +70,4 @@ Home art direction prompt: Replace the dashboard-like home page with a single-sc
 - Room migration passed isolated PostgreSQL checks for open joining, approval, room switching, room-scoped coin, direct-write denial, and rejection of player 13.
 - Live Supabase verification passed with temporary accounts for room creation, approval, switching, open joining, independent coin, and shared roster. Test rooms and accounts were removed afterward.
 - Premium Home passed visual checks at 1920x1080 and 1366x768; portrait shows a rotate-device screen. The new dock build action, target selection, radar, and animated missile route were exercised in Chrome without console errors.
+- Layered world scene passed visual checks at 1920x1080, 1366x768, and 1280x720. All 12 islands are independent transparent objects with absolute world coordinates and polygon hitboxes; target selection and dock construction passed in Chrome without console errors.
