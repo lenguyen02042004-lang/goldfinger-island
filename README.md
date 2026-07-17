@@ -2,6 +2,8 @@
 
 Trò chơi team-building 2D: xây đủ 10 công trình, phòng thủ đảo và dùng tên lửa để cản đối thủ. Người hoàn thành đầu tiên thắng vòng; bảng xếp hạng được giữ lại khi vòng mới bắt đầu.
 
+Màn hình chính là game canvas landscape 16:9 không cuộn, gồm 12 đảo isometric, radar trực tiếp, đường bay tên lửa theo cung, thanh tài nguyên và 10 công trình. Giao diện dùng Framer Motion cho tương tác, SVG motion path cho tên lửa và CSS keyframes cho môi trường biển.
+
 ## Phòng trận
 
 - Mỗi phòng có mã riêng và link mời dạng `/?room=ABC123`.

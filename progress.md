@@ -2,6 +2,8 @@ Original prompt: Build the complete GoldFinger Island team-building web game: 10
 
 Room expansion prompt: Add persistent match rooms with shareable codes and invite links, at most 12 equal players, open or creator-approved admission, and a leaderboard permanently scoped to each room.
 
+Home art direction prompt: Replace the dashboard-like home page with a single-screen 1920x1080 premium casual strategy game board: 12 isometric tropical islands, animated missile paths, live radar, top resources, and a 10-building dock. Match the supplied colorful chibi reference and avoid web-dashboard styling.
+
 ## Locked MVP rules
 
 - Starting balance: 1,000 coins.
@@ -44,6 +46,7 @@ Room expansion prompt: Add persistent match rooms with shareable codes and invit
 - [x] Connect and deploy Vercel project under team `le-nguyen2004`.
 - [x] Add Supabase environment values to Vercel.
 - [x] Add persistent 12-player rooms, room codes, invite links, admission approval, and room-scoped leaderboards.
+- [x] Rebuild Home as a no-scroll 16:9 premium isometric game canvas with generated map and building assets.
 
 ## Verification log
 
@@ -63,3 +66,4 @@ Room expansion prompt: Add persistent match rooms with shareable codes and invit
 - Live production verification passed with two temporary authenticated accounts: shared round membership, reward, build, shield, missile launch, Realtime event delivery, impact damage, and attacker reward. Test accounts and related rows were removed afterward.
 - Room migration passed isolated PostgreSQL checks for open joining, approval, room switching, room-scoped coin, direct-write denial, and rejection of player 13.
 - Live Supabase verification passed with temporary accounts for room creation, approval, switching, open joining, independent coin, and shared roster. Test rooms and accounts were removed afterward.
+- Premium Home passed visual checks at 1920x1080 and 1366x768; portrait shows a rotate-device screen. The new dock build action, target selection, radar, and animated missile route were exercised in Chrome without console errors.

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import "@fontsource/fredoka/600.css";
+import "@fontsource/fredoka/700.css";
 import { GameProvider } from "@/components/game-provider";
 import { Navbar } from "@/components/navbar";
 import { WinnerModal } from "@/components/winner-modal";

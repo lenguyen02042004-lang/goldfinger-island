@@ -18,6 +18,8 @@ export function Navbar() {
   const { state, mode } = useGame();
   const shielded = Boolean(state.islandShieldUntil && state.islandShieldUntil > state.now);
 
+  if (pathname === "/") return null;
+
   return (
     <>
       <header className="topbar">

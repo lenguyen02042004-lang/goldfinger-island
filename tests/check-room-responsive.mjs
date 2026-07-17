@@ -7,8 +7,9 @@ const browser = await chromium.launch({
 });
 const consoleErrors = [];
 const scenarios = [
-  { name: "desktop", width: 1280, height: 800 },
-  { name: "mobile", width: 390, height: 844 },
+  { name: "full-hd", width: 1920, height: 1080, portrait: false },
+  { name: "laptop", width: 1366, height: 768, portrait: false },
+  { name: "portrait", width: 390, height: 844, portrait: true },
 ];
 
 await mkdir("artifacts", { recursive: true });
@@ -25,17 +26,24 @@ for (const scenario of scenarios) {
   if (!response?.ok()) throw new Error(`Page returned HTTP ${response?.status() ?? "unknown"}.`);
   await page.waitForTimeout(1200);
 
-  const hub = page.locator(".room-hub").first();
-  if (await hub.count() === 0) {
-    throw new Error(`Room hub missing on ${scenario.name}: ${(await page.locator("body").innerText()).slice(0, 500)}`);
-  }
-  const box = await hub.boundingBox();
-  if (!box || box.x < 0 || box.x + box.width > scenario.width) {
-    throw new Error(`Room hub overflows the ${scenario.name} viewport.`);
+  if (scenario.portrait) {
+    await page.locator(".rotate-device").waitFor();
+  } else {
+    const world = page.locator(".game-world");
+    await world.waitFor();
+    const box = await world.boundingBox();
+    if (!box || box.x < 0 || box.y < 0 || box.x + box.width > scenario.width || box.y + box.height > scenario.height) {
+      throw new Error(`Game canvas overflows the ${scenario.name} viewport.`);
+    }
+    const playerSlots = await page.locator(".map-island").count();
+    const dockSlots = await page.locator(".dock-building").count();
+    if (playerSlots !== 12 || dockSlots !== 10) {
+      throw new Error(`Expected 12 islands and 10 building slots, found ${playerSlots} and ${dockSlots}.`);
+    }
   }
 
   await page.screenshot({
-    path: `artifacts/room-hub-${scenario.name}.png`,
+    path: `artifacts/premium-home-${scenario.name}.png`,
     fullPage: true,
   });
   await context.close();
@@ -45,5 +53,5 @@ if (consoleErrors.length) {
   throw new Error(`Browser console errors:\n${consoleErrors.join("\n")}`);
 }
 
-console.log("Desktop and mobile room hub UI passed.");
+console.log("Full HD, laptop, and portrait game canvas UI passed.");
 await browser.close();
